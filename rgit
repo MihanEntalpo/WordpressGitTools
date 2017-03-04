@@ -1,0 +1,7 @@
+#!/bin/bash
+ssh remoteuser@mysite.ru "cd /var/www/mysite.ru && git $@"
+
+
+
+
+

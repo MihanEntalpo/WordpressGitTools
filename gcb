@@ -1,0 +1,55 @@
+#!/bin/bash
+BRANCHES=`git branch | sed 's|* ||g;s| ||g;s|^|"|g;s|$|"|g'`
+BRANCHES_WO_QUOTES=`git branch | sed 's|* ||g;s| ||g'`
+CURRENT_BRANCH=`git branch | grep '*' | sed 's|* ||g;s| ||g'`
+REMOTE_BRANCHES=`git branch -r | grep -v "\->" | sed 's|^[\ \t]*||g' | sed 's|^|"|g;s|$|"|g'`
+REMOTE_BRANCHES_WO_ORIGIN=`git branch -r | grep -v "\->" | sed 's|^[\ \t]*||g' | sed 's|^|"|g;s|$|"|g' | sed 's|origin/||g;s|"||g'`
+
+if [ $# -ne 1 ]
+then
+  echo
+  echo "Switch to git branch (create it if not exists)"
+  echo
+  echo "Usage: `basename $0` new_branch_name"
+  echo
+  echo "Branches:"
+  echo "========="
+  echo -e "\033[32;1m$BRANCHES_WO_QUOTES\033[0m"
+  echo
+  echo "Remote branches (will be linked to local):"
+  echo "=========================================="
+  echo -e "\033[33;1m$REMOTE_BRANCHES_WO_ORIGIN\033[0m"
+  echo
+  echo "If not all the remote branches displayed, run 'git fetch'"
+  echo
+  echo -e "Current branch: \033[35;1m\"$CURRENT_BRANCH\"\033[0m"
+  echo
+  exit $WRONG_ARGS
+fi
+
+BRANCH_EXISTS=`git branch | sed 's|* ||g;s| ||g;s|^|"|g;s|$|"|g' | grep "\"$1\"" | sed 's|* ||g;s| ||g'`
+
+BRANCH_EXISTS_REMOTE=`git branch -r | grep -v "\->" | sed 's|^[\ \t]*||g' | sed 's|^|"|g;s|$|"|g' | sed 's|origin/||g;s|"||g;s|^|"|g;s|$|"|g' | grep "\"$1\"" | sed 's|"||g'`
+
+if [[ -z $BRANCH_EXISTS ]]
+then
+	if [[ -z $BRANCH_EXISTS_REMOTE ]]
+	then
+                echo "Branch $1 doesn't exists, do you with to create it?"
+                echo "(enter 1 or 2)"
+                select yn in "Yes" "No"; do
+                        case $yn in
+                                Yes ) git branch $1; break;;
+                                No  ) echo "Creation of branch cancelled, exiting" && exit;;
+                        esac
+                done
+	else
+		echo "Changing to branch:$1 linked with remove origin/$1"
+		git checkout -b $1 origin/$1
+		echo "Changing to branch:$1"
+	fi
+else
+	echo "Branch exists"
+fi
+echo "Checkout to branch $1"
+git checkout $1
