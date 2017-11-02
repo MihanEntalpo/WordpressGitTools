@@ -1,5 +1,7 @@
 #!/bin/bash
-ssh remoteuser@mysite.ru "cd /var/www/mysite.ru && git $@"
+ARGS=$(printf '"%s" ' "$@")
+CMD="cd /var/www/mysite.ru && git $ARGS"
+ssh remoteuser@mysite.ru "$CMD"
 
 
 
